@@ -1,10 +1,13 @@
-const mongoose = require('mongoose');
-const mongoURI="mongodb://localhost:27017/inotebook"
+const mongoose = require("mongoose");
 
-const connectToMongo =async()=>{
-   await mongoose.connect(mongoURI,
-        
-)}
-console.log("Connected to Mongo Successfully");
+const connectToMongo = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("Connected to MongoDB Atlas successfully");
+  } catch (error) {
+    console.error("MongoDB connection failed:", error.message);
+    process.exit(1);
+  }
+};
 
-module.exports=connectToMongo;
+module.exports = connectToMongo;

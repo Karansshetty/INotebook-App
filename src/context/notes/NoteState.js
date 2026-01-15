@@ -21,18 +21,25 @@ const NoteState = (props) => {
 
   // Get All Notes
   const getNotes = async () => {
-    const response = await fetch(`${host}/api/notes/fetchallnotes`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer YOUR_TOKEN_HERE",
-        "auth-token":
-         localStorage.getItem('token'),
-      },
-    });
-    const json = await response.json();
+  const response = await fetch(`${host}/api/notes/fetchallnotes`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "auth-token": localStorage.getItem("token"),
+    },
+  });
+
+  const json = await response.json();
+
+  // ✅ IMPORTANT SAFETY CHECK
+  if (Array.isArray(json)) {
     setNotes(json);
-  };
+  } else {
+    console.error("fetchallnotes did not return array:", json);
+    setNotes([]); // prevent crash
+  }
+};
+
 
   // Add Note
   const addNote = async (title, description, tag) => {
@@ -60,7 +67,6 @@ const NoteState = (props) => {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer YOUR_TOKEN_HERE",
         "auth-token":
          localStorage.getItem('token'),
       },
@@ -78,7 +84,6 @@ const NoteState = (props) => {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer YOUR_TOKEN_HERE",
         "auth-token":
          localStorage.getItem('token'),
       },
