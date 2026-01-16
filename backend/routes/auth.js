@@ -11,9 +11,9 @@ const JWT_SECRET=process.env.JWT_SECRET;
 router.post(
   "/createuser",
   [
-    body("name").isLength({ min: 3 }),
-    body("email").isEmail(),
-    body("password").isLength({ min: 5 }),
+    body("name", "Name must be at least 3 characters").exists().bail().isLength({ min: 3 }),
+    body("email", "Please enter a valid email").exists().bail().trim().isEmail().normalizeEmail(),
+    body("password", "Password must be at least 5 characters").exists().bail().isLength({ min: 5 }),
   ],
   async (req, res) => {
     let success=false;
@@ -25,7 +25,8 @@ router.post(
     
     }
     try {
-      let user = await User.findOne({ email: req.body.email });
+      const email = (req.body.email || "").trim().toLowerCase();
+      let user = await User.findOne({ email });
       if (user) {
         return res
           .status(400)
@@ -35,7 +36,7 @@ router.post(
       const secPass=await bcrypt.hash(req.body.password,salt);
       user=await User.create({
         name: req.body.name,
-        email: req.body.email,
+        email,
         password: secPass,
       });
       // res.json({error:"Enter unique email"})
@@ -46,11 +47,14 @@ router.post(
             id:user.id
       }}
       const authToken=jwt.sign(data,JWT_SECRET);
-      console.log(authToken);
       success=true;
     res.json({success, authToken})
     } catch (error) {
-      console.error(error.message,"catch block");
+      if (error && error.code === 11000) {
+        return res
+          .status(400)
+          .json({ success: false, error: "Sorry a user with this email already exists" });
+      }
       success=false;
       res.status(500).send("Some error occurred");
     }
@@ -59,7 +63,7 @@ router.post(
 
 //Login
 router.post("/login",[
-    body("email").isEmail(),
+  body("email").trim().isEmail().normalizeEmail(),
     body("password","Password cannot be blank").exists()
 ],async (req,res)=>{
     const errors=validationResult(req);
@@ -67,9 +71,10 @@ router.post("/login",[
         return res.status(400).json({success,errors:errors.array()});
     }
     let success=false;
-    const{email,password}=req.body;
+    const email = (req.body.email || "").trim().toLowerCase();
+    const { password } = req.body;
     try{
-        let user=await User.findOne({email});
+      let user=await User.findOne({email});
         if(!user){
           success=false;
             return res.status(400).json({success,error:"Please try to login with correct credentials"});
@@ -85,7 +90,6 @@ router.post("/login",[
             }}
         
         const authToken=jwt.sign(data,JWT_SECRET);
-        console.log(authToken);
         success=true;
         res.json({success, authToken});
             }
@@ -101,7 +105,6 @@ router.post("/getuser",fetchUser,async (req,res)=>{
       const userId=req.user.id;
       const user=await User.findById(userId).select("-password");
       res.send(user);
-      console.log(user);
     }catch(error){
       res.status(500).send("Internal Server Error");
     }
