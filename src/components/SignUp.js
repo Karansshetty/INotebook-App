@@ -10,6 +10,8 @@ function SignUp() {
       const navigate=useNavigate();
     const [credentials,setCredentials]=useState({name:"",email:"", password:"", cpassword:""});
 
+    const API_URL = process.env.REACT_APP_API_URL;
+
   const passwordsMatch = useMemo(() => {
     return credentials.password === credentials.cpassword;
   }, [credentials.password, credentials.cpassword]);
@@ -43,7 +45,22 @@ function SignUp() {
         }
 
         try {
+          // OLD (localhost – for development only)
+          /*
           const response = await fetch(`http://localhost:5000/api/auth/createuser/`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: credentials.name.trim(),
+              email: credentials.email.trim().toLowerCase(),
+              password: credentials.password,
+            }),
+          });
+          */
+
+          const response = await fetch(`${API_URL}/api/auth/createuser/`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
