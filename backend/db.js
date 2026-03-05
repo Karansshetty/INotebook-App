@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const connectToMongo = async () => {
   try {
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI is not set");
+    }
+
     await mongoose.connect(process.env.MONGO_URI);
     console.log("Connected to MongoDB Atlas successfully");
   } catch (error) {

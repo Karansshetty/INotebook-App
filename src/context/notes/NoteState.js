@@ -1,57 +1,53 @@
 import NoteContext from "./NoteContext";
 import React, { useState } from "react";
+import API_BASE_URL from "../../config";
 
 const NoteState = (props) => {
-
- 
- const [alert, setAlert]=useState(null);
-  const showAlert=(message,type)=>{
+  const [alert, setAlert] = useState(null);
+  const showAlert = (message, type) => {
     setAlert({
-      msg:message,
-      type:type
-    })
-    setTimeout(()=>{
+      msg: message,
+      type: type,
+    });
+    setTimeout(() => {
       setAlert(null);
-    }, 3000)
-  }
-  
+    }, 3000);
+  };
+
   // OLD (localhost – for development only)
   // const host = "http://localhost:5000";
 
-  const API_URL = process.env.REACT_APP_API_URL;
   const noteInitial = [];
   const [notes, setNotes] = useState(noteInitial);
 
   // Get All Notes
   const getNotes = async () => {
-  const response = await fetch(`${API_URL}/api/notes/fetchallnotes`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "auth-token": localStorage.getItem("token"),
-    },
-  });
+    const response = await fetch(`${API_BASE_URL}/api/notes/fetchallnotes`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "auth-token": localStorage.getItem("token"),
+      },
+    });
 
-  const json = await response.json();
+    const json = await response.json();
 
-  // ✅ IMPORTANT SAFETY CHECK
-  if (Array.isArray(json)) {
-    setNotes(json);
-  } else {
-    console.error("fetchallnotes did not return array:", json);
-    setNotes([]); // prevent crash
-  }
-};
-
+    // ✅ IMPORTANT SAFETY CHECK
+    if (Array.isArray(json)) {
+      setNotes(json);
+    } else {
+      console.error("fetchallnotes did not return array:", json);
+      setNotes([]); // prevent crash
+    }
+  };
 
   // Add Note
   const addNote = async (title, description, tag) => {
-    const response = await fetch(`${API_URL}/api/notes/addnote`, {
+    const response = await fetch(`${API_BASE_URL}/api/notes/addnote`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "auth-token":
-         localStorage.getItem('token'),
+        "auth-token": localStorage.getItem("token"),
       },
       body: JSON.stringify({
         title: title,
@@ -61,34 +57,32 @@ const NoteState = (props) => {
     });
     const json = await response.json();
     setNotes(notes.concat(json));
-    showAlert("Note Added Successfully","success");
+    showAlert("Note Added Successfully", "success");
   };
 
   // Delete Note
   const deleteNote = async (id) => {
-    await fetch(`${API_URL}/api/notes/deletenote/${id}`, {
+    await fetch(`${API_BASE_URL}/api/notes/deletenote/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        "auth-token":
-         localStorage.getItem('token'),
+        "auth-token": localStorage.getItem("token"),
       },
     });
     let newNotes = notes.filter((note) => {
       return note._id !== id;
     });
     setNotes(newNotes);
-    showAlert("Note Deleted Successfully","success");
+    showAlert("Note Deleted Successfully", "success");
   };
 
   // Edit Note
   const editNote = async (id, title, description, tag) => {
-    const response = await fetch(`${API_URL}/api/notes/updatenote/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/notes/updatenote/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "auth-token":
-         localStorage.getItem('token'),
+        "auth-token": localStorage.getItem("token"),
       },
       body: JSON.stringify({
         title: title,
@@ -109,12 +103,21 @@ const NoteState = (props) => {
       }
     }
     setNotes(newNotes);
-    showAlert("Note Updated Successfully","success"); 
+    showAlert("Note Updated Successfully", "success");
   };
 
   return (
     <NoteContext.Provider
-      value={{ notes, setNotes, addNote, deleteNote, editNote, getNotes,alert,showAlert }}
+      value={{
+        notes,
+        setNotes,
+        addNote,
+        deleteNote,
+        editNote,
+        getNotes,
+        alert,
+        showAlert,
+      }}
     >
       {props.children}
     </NoteContext.Provider>
